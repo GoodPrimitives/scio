@@ -15,9 +15,10 @@
  * under the License.
  */
 
-package com.spotify.scio.bigquery.types
+package com.spotify.scio.bigquery
 
 import com.google.api.services.bigquery.model.{TableFieldSchema, TableSchema}
+import com.google.cloud.bigquery.storage.v1beta1.ReadOptions.TableReadOptions
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Type
 
@@ -25,6 +26,15 @@ import scala.collection.JavaConverters._
 
 /** Utility for BigQuery Storage API. */
 object StorageUtil {
+
+  def tableReadOptions(selectedFields: List[String] = null,
+                       rowRestriction: String = null): TableReadOptions = {
+    val builder = TableReadOptions.newBuilder().addAllSelectedFields(selectedFields.asJava)
+    if (rowRestriction != null) {
+      builder.setRowRestriction(rowRestriction)
+    }
+    builder.build()
+  }
 
   // https://cloud.google.com/bigquery/docs/reference/storage/
   def toTableSchema(avroSchema: Schema): TableSchema = {

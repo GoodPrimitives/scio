@@ -19,12 +19,11 @@ package com.spotify.scio.bigquery.client
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.services.bigquery.model._
-import com.google.cloud.bigquery.storage.v1beta1.ReadOptions.TableReadOptions
 import com.google.cloud.bigquery.storage.v1beta1.Storage.CreateReadSessionRequest
 import com.google.cloud.bigquery.storage.v1beta1.TableReferenceProto
 import com.google.cloud.hadoop.util.ApiErrorExtractor
-import com.spotify.scio.bigquery.TableRow
 import com.spotify.scio.bigquery.client.BigQuery.Client
+import com.spotify.scio.bigquery.{StorageUtil, TableRow}
 import org.apache.avro.Schema
 import org.apache.beam.sdk.extensions.gcp.options.GcsOptions
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.{CreateDisposition, WriteDisposition}
@@ -108,14 +107,10 @@ private[client] final class TableOps(client: Client) {
       .setTableId(tableRef.getTableId)
       .build()
 
-    val readOptions = TableReadOptions.newBuilder().addAllSelectedFields(selectedFields.asJava)
-    if (rowRestriction != null) {
-      readOptions.setRowRestriction(rowRestriction)
-    }
     val request = CreateReadSessionRequest
       .newBuilder()
       .setTableReference(tableRefProto.build())
-      .setReadOptions(readOptions.build())
+      .setReadOptions(StorageUtil.tableReadOptions(selectedFields, rowRestriction))
       .setParent(s"projects/${client.project}")
       .build()
     val session = client.storage.createReadSession(request)
