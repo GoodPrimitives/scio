@@ -15,8 +15,12 @@
  * under the License.
  */
 
+import com.google.api.services.bigquery.model.{TableFieldSchema, TableSchema}
 import com.spotify.scio._
 import com.spotify.scio.bigquery._
+import com.spotify.scio.bigquery.client.BigQuery
+
+import scala.collection.JavaConverters._
 
 object StorageTest {
 
@@ -50,5 +54,26 @@ object TypedStorageTest {
     sc.typedBigQuery[Record]()
       .debug()
     sc.close()
+    ()
+  }
+}
+
+object SchemaTest {
+  def main(args: Array[String]): Unit = {
+    val bq = BigQuery.defaultInstance()
+    bq.tables.create(
+      "scio-playground:neville_us.schema",
+      new TableSchema().setFields(
+        List(
+          new TableFieldSchema().setName("bool1").setMode("REQUIRED").setType("BOOL"),
+          new TableFieldSchema().setName("bool2").setMode("REQUIRED").setType("BOOLEAN"),
+          new TableFieldSchema().setName("int1").setMode("REQUIRED").setType("INT64"),
+          new TableFieldSchema().setName("int2").setMode("REQUIRED").setType("INTEGER"),
+          new TableFieldSchema().setName("float1").setMode("REQUIRED").setType("FLOAT64"),
+          new TableFieldSchema().setName("float2").setMode("REQUIRED").setType("FLOAT"),
+//          new TableFieldSchema().setName("array1").setMode("ARRAY").setType("STRING"),
+          new TableFieldSchema().setName("array2").setMode("REPEATED").setType("STRING")
+        ).asJava)
+    )
   }
 }
